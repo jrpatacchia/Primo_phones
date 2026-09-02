@@ -1,0 +1,33 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "//": "A apresentação é uma página só: /presentation, /demo e /studio precisam cair no index.html. Arquivos que existem em disco são servidos antes desta regra.",
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "//": "As mídias trocam de nome a cada envio e a apresentação ainda acrescenta ?v=. Pode cachear para sempre.",
+      "source": "/presentation/assets/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "//": "Este arquivo diz qual mídia entra em cada área. Se ficar em cache, uma troca no estúdio demora a aparecer.",
+      "source": "/presentation/content.json",
+      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    }
+  ]
+}

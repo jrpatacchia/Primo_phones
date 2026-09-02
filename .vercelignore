@@ -1,0 +1,6 @@
+# Nada disto precisa subir para o build da Vercel.
+node_modules
+dist
+assets-originais
+.claude
+supabase

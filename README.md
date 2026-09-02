@@ -245,7 +245,57 @@ apenas escalada (`transform: scale`) para caber na tela. Consequências:
 
 ---
 
-## Publicar
+## Publicar na Vercel
+
+O projeto já vem com `vercel.json`. Na Vercel:
+
+**1.** Add New → Project → importe `jrpatacchia/Primo_phones`. O framework Vite é
+detectado sozinho; não mude build command nem output directory.
+
+**2. Antes de clicar em Deploy**, abra Environment Variables e adicione as duas:
+
+| Nome | Valor |
+| --- | --- |
+| `VITE_SUPABASE_URL` | o mesmo do seu `.env` |
+| `VITE_SUPABASE_ANON_KEY` | o mesmo do seu `.env` |
+
+Marque os três ambientes (Production, Preview, Development). O `.env` não vai
+para o Git, então sem esse passo a Vercel constrói o site sem Supabase: a
+apresentação funciona igual, lendo os arquivos do próprio site, mas o
+`/studio` publicado mostra o aviso de "só roda localmente".
+
+**3.** Deploy. Cada `git push` na branch `main` publica de novo, sozinho.
+
+### O que o vercel.json resolve
+
+- **Rotas.** `/presentation`, `/demo` e `/studio` não são pastas — são estados
+  da mesma página. A regra de rewrite manda tudo para o `index.html`. Arquivos
+  que existem de verdade são servidos antes da regra, então as mídias não são
+  afetadas.
+- **Cache.** As mídias ganham cache de um ano (o nome de cada arquivo muda a
+  cada envio, então não há risco de servir versão velha), e o `content.json`
+  ganha `no-store` — é ele que diz qual mídia entra em cada área, e precisa
+  refletir na hora o que você trocou no estúdio.
+
+O `.htaccess` continua na pasta `public/` para o caso de você também publicar
+na HostGator. Na Vercel ele é ignorado.
+
+### Sobre o tráfego
+
+Vale saber onde cada mídia está hospedada:
+
+- **Arquivo local** (dentro de `public/`, publicado junto com o site) — servido
+  pela Vercel, que dá 100 GB por mês no plano gratuito.
+- **Supabase Storage** (enviado pelo estúdio publicado) — servido pelo Supabase,
+  que dá 5 GB por mês no plano gratuito.
+
+Ou seja: mídia que não muda quase nunca fica mais barata como arquivo local;
+mídia que você quer trocar sem publicar de novo vale a pena no Supabase. Os dois
+modos convivem, área por área.
+
+---
+
+## Publicar em outra hospedagem
 
 ```bash
 npm run build
