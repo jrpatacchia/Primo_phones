@@ -1,11 +1,10 @@
 import { from } from "../lib/motion";
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { CTA } from "../components/CTA";
 import { DesktopMockup } from "../components/DesktopMockup";
 import { PhoneMockup } from "../components/PhoneMockup";
 import { PresentationSlide, SlideHeading } from "../components/PresentationSlide";
-import { EXTENSIONS, ScreenshotFrame } from "../components/ScreenshotFrame";
+import { ScreenshotFrame } from "../components/ScreenshotFrame";
 import { assets } from "../lib/assets";
 
 /** Tela 05 — fechamento. Sem preço, sem plano: o objetivo é abrir conversa. */
@@ -38,9 +37,9 @@ export function Slide05Close({
         />
 
         {/* Produto completo: catálogo + painel + marca */}
-        <div className="relative mt-[56px] flex h-[940px] w-full shrink-0 items-start justify-center">
+        <div className="relative mt-[56px] flex h-[856px] w-full shrink-0 items-start justify-center">
           <motion.div
-            className="absolute left-[-72px] top-[248px]"
+            className="absolute left-[-72px] top-[156px]"
             initial={from({ opacity: 0, x: -50, y: 30 })}
             animate={active ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: -50, y: 30 }}
             transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
@@ -50,7 +49,7 @@ export function Slide05Close({
           </motion.div>
 
           <motion.div
-            className="absolute right-[-64px] top-[292px]"
+            className="absolute right-[-64px] top-[200px]"
             initial={from({ opacity: 0, x: 50, y: 30 })}
             animate={active ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: 50, y: 30 }}
             transition={{ duration: 1, delay: 0.62, ease: [0.22, 1, 0.36, 1] }}
@@ -82,7 +81,6 @@ export function Slide05Close({
             animate={active ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 60, scale: 0.95 }}
             transition={{ duration: 1.05, delay: 0.38, ease: [0.22, 1, 0.36, 1] }}
           >
-            <BrandSlot active={active} />
             <PhoneMockup asset={assets.catalogHome} width={400} crop={{ zoom: 1.01, y: 20 }} />
           </motion.div>
         </div>
@@ -103,37 +101,5 @@ export function Slide05Close({
         </div>
       </div>
     </PresentationSlide>
-  );
-}
-
-/** Espaço reservado para a marca da loja, acima do catálogo. */
-function BrandSlot({ active }: { active: boolean }) {
-  const [attempt, setAttempt] = useState(0);
-  const missing = attempt >= EXTENSIONS.length;
-
-  return (
-    <motion.div
-      className="mx-auto mb-8 flex w-fit items-center gap-4"
-      initial={from({ opacity: 0, y: 14 })}
-      animate={active ? { opacity: 1, y: 0 } : { opacity: 0, y: 14 }}
-      transition={{ duration: 0.8, delay: 0.75 }}
-    >
-      <span className="hairline grid h-[62px] w-[62px] place-items-center overflow-hidden rounded-2xl bg-white/[0.03]">
-        {missing ? (
-          <span className="text-[18px] font-medium tracking-tight text-faint">logo</span>
-        ) : (
-          <img
-            key={attempt}
-            src={`${assets.brandLogo.src}.${EXTENSIONS[attempt]}`}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            onError={() => setAttempt((a) => a + 1)}
-            className="h-full w-full object-contain p-2"
-          />
-        )}
-      </span>
-      <span className="kicker text-[16px] text-faint">sua marca</span>
-    </motion.div>
   );
 }

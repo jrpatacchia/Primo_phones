@@ -104,14 +104,6 @@ const definitions = {
     label: "[SCREENSHOT OUTRA LOJA]",
     ratio: "9:16 — formato de story, ex.: 1080 × 1920",
   },
-  brandLogo: {
-    src: `${base}/branding/logo`,
-    folder: "branding",
-    title: "Logo da loja",
-    where: "Tela 05, acima do celular",
-    label: "[LOGO DA LOJA]",
-    ratio: "quadrada, fundo transparente",
-  },
 } satisfies Record<string, Omit<Asset, "id">>;
 
 export type AssetKey = keyof typeof definitions;
