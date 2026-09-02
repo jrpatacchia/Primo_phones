@@ -31,6 +31,12 @@ on conflict (id) do nothing;
 
 alter table public.presentation_content enable row level security;
 
+-- O Supabase já concede isto por padrão em tabelas novas do schema public,
+-- mas deixar explícito evita um "permission denied" difícil de diagnosticar
+-- caso as permissões padrão do projeto tenham sido alteradas.
+grant select on public.presentation_content to anon, authenticated;
+grant insert, update on public.presentation_content to authenticated;
+
 drop policy if exists "conteudo visivel para todos" on public.presentation_content;
 create policy "conteudo visivel para todos"
   on public.presentation_content
