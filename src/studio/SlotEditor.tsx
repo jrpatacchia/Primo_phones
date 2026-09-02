@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Film, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import type { Asset } from "../lib/assets";
-import { ASSETS_URL, type MediaEntry } from "../lib/content";
+import { mediaUrl, type MediaEntry } from "../lib/content";
 
 /** Um encaixe de mídia no painel do estúdio. */
 export function SlotEditor({
@@ -168,7 +168,7 @@ function Thumb({ entry }: { entry?: MediaEntry }) {
     );
   }
 
-  const src = `${ASSETS_URL}/${entry.file}?v=${entry.updatedAt ?? 0}`;
+  const src = mediaUrl(entry);
 
   return (
     <div className={box}>

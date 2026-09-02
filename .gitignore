@@ -7,3 +7,7 @@ tsconfig.tsbuildinfo
 
 # Originais das capturas, guardados pelo npm run optimize
 assets-originais
+
+# Credenciais locais
+.env
+.env.local

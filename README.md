@@ -17,7 +17,7 @@ npm run dev
 | URL | Para quê |
 | --- | --- |
 | `/` | Apresentação. Scroll vertical, swipe no celular, setas do teclado, botões anterior/próximo e indicador `01 / 05`. |
-| `/studio` | **Estúdio.** Troca as imagens e vídeos das áreas de mockup, com prévia ao vivo. Só existe em `npm run dev`. |
+| `/studio` | **Estúdio.** Troca as imagens e vídeos das áreas de mockup, com prévia ao vivo. Roda em `npm run dev` e, com Supabase configurado, também na apresentação publicada. |
 | `/presentation` | Modo captura. As cinco telas empilhadas em 1080 × 1920 exatos, sem navegação e sem animação pendente — o que estiver na tela é o estado final. |
 | `/presentation?slide=3` | Uma única tela em 1080 × 1920, pronta para screenshot. `?slide=1` … `?slide=5`. |
 | `/demo` | Avanço automático a cada 5,2 s, sem interface. Serve para gravar a tela e gerar um vídeo. |
@@ -60,9 +60,9 @@ Em cada área você pode:
 Tudo é salvo sozinho em `public/presentation/content.json`. Não existe botão
 salvar, banco de dados nem login.
 
-> O estúdio grava arquivos no seu computador, então só roda localmente. Na
-> apresentação publicada a rota `/studio` mostra um aviso e nada mais — o site é
-> 100% estático.
+> Sem Supabase o estúdio grava arquivos no seu computador e só roda localmente
+> — na apresentação publicada a rota `/studio` mostra um aviso e nada mais. Com
+> Supabase, ele funciona publicado e pede login. Veja a seção Supabase abaixo.
 
 Na primeira abertura, o estúdio adota sozinho os arquivos que já estiverem na
 pasta de assets, para você abrir vendo o que a apresentação realmente exibe.
@@ -80,6 +80,64 @@ enviar.
 
 As três capturas iniciais saíram de 10 MB para 436 KB. Vale rodar sempre: a
 apresentação é aberta no celular, muitas vezes em rede móvel.
+
+---
+
+## Supabase
+
+Sem Supabase o projeto funciona: a apresentação lê `public/presentation/` e o
+estúdio só roda em `npm run dev`. Com Supabase, o estúdio passa a funcionar
+**na apresentação publicada**, de qualquer computador, com login.
+
+### Ligar
+
+**1. Variáveis** — copie `.env.example` para `.env` e preencha com o que está
+em Settings → API no painel do Supabase:
+
+```
+VITE_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+VITE_SUPABASE_ANON_KEY=...
+```
+
+A anon key é pública por natureza — ela vai dentro do JavaScript do site. Quem
+protege os dados são as políticas de RLS, não o segredo da chave. O `.env` fica
+fora do Git mesmo assim.
+
+**2. Estrutura** — painel do Supabase → SQL Editor → New query → cole
+`supabase/schema.sql` inteiro → Run. Isso cria a tabela `presentation_content`,
+o bucket `presentation` e as políticas: **qualquer pessoa lê, só quem está
+logado escreve.**
+
+**3. Seu usuário** — Authentication → Users → Add user, com **Auto Confirm
+User** marcado. É com esse e-mail e senha que você entra no `/studio`.
+
+**4. Conferir**
+
+```bash
+npm run supabase:check
+```
+
+**5. Levar as mídias que já existem** (opcional)
+
+```bash
+SUPABASE_EMAIL=voce@exemplo.com SUPABASE_PASSWORD=suasenha npm run supabase:migrate
+```
+
+Sobe cada arquivo de `public/presentation/assets/` para o bucket e grava o
+conteúdo na tabela. Depois disso o Supabase passa a mandar.
+
+### Como fica
+
+| | Sem Supabase | Com Supabase |
+| --- | --- | --- |
+| Onde a apresentação lê | `content.json` local | tabela, com o local de reserva |
+| Onde as mídias ficam | `public/presentation/assets/` | bucket `presentation` |
+| Onde o estúdio funciona | só em `npm run dev` | também na apresentação publicada |
+| Quem pode editar | quem estiver no seu computador | quem tiver login |
+
+A leitura tem sempre uma rede de proteção: se o Supabase não responder ou a
+tabela estiver vazia, a apresentação cai nos arquivos locais em vez de aparecer
+em branco.
 
 ---
 
@@ -166,8 +224,10 @@ src/components/
   SlideNavigation.tsx       Barra anterior/próximo
   ProgressIndicator.tsx     Contador 01 / 05
 
-src/studio/                 O estúdio (só carrega em desenvolvimento)
-plugins/studio-server.ts    API de gravação do estúdio (só em npm run dev)
+src/studio/                 O estúdio: painel, login e as duas formas de gravar
+src/lib/supabase.ts         Cliente do Supabase (null quando não configurado)
+plugins/studio-server.ts    Gravação em disco, usada quando não há Supabase
+supabase/schema.sql         Tabela, bucket e políticas de acesso
 ```
 
 ### Por que um palco fixo

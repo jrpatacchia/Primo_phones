@@ -1,10 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ExternalLink, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
+import { Cloud, ExternalLink, HardDrive, LogOut, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
 import { assetList } from "../lib/assets";
 import type { AssetKey } from "../lib/assets";
 import { EMPTY_CONTENT, type Content, type MediaEntry } from "../lib/content";
 import { SLIDE_COUNT } from "../lib/presentation";
-import { fetchContent, removeFile, saveContent, uploadFile } from "./api";
+import {
+  backend,
+  currentSession,
+  fetchContent,
+  onSessionChange,
+  removeFile,
+  saveContent,
+  signOut,
+  uploadFile,
+  type Session,
+} from "./api";
+import { SignIn } from "./SignIn";
 import { SlotEditor } from "./SlotEditor";
 
 const DEVICES = {
@@ -21,6 +32,23 @@ type Status = "pronto" | "salvando" | "erro";
  * Só roda em `npm run dev` — na apresentação publicada esta rota não existe.
  */
 export default function Studio() {
+  const [session, setSession] = useState<Session | undefined>(undefined);
+
+  useEffect(() => {
+    currentSession().then(setSession);
+    return onSessionChange(setSession);
+  }, []);
+
+  if (session === undefined) {
+    return <div className="grid h-dvh place-items-center text-[13px] text-faint">carregando…</div>;
+  }
+
+  if (session === null) return <SignIn onDone={() => currentSession().then(setSession)} />;
+
+  return <StudioPanel session={session} />;
+}
+
+function StudioPanel({ session }: { session: NonNullable<Session> }) {
   const [content, setContent] = useState<Content>(EMPTY_CONTENT);
   const [status, setStatus] = useState<Status>("pronto");
   const [slide, setSlide] = useState(1);
@@ -28,10 +56,15 @@ export default function Studio() {
   const [version, setVersion] = useState(0);
   const [edits, setEdits] = useState(0);
 
+  const [problem, setProblem] = useState<string | null>(null);
+
   useEffect(() => {
     fetchContent()
       .then((data) => setContent({ media: data.media ?? {} }))
-      .catch(() => setStatus("erro"));
+      .catch((e: unknown) => {
+        setStatus("erro");
+        setProblem(e instanceof Error ? e.message : String(e));
+      });
   }, []);
 
   /* Salva sozinho, com uma pausa para não gravar a cada arrastada de slider. */
@@ -44,9 +77,11 @@ export default function Studio() {
       try {
         await saveContent(content);
         setStatus("pronto");
+        setProblem(null);
         setVersion((v) => v + 1);
-      } catch {
+      } catch (e) {
         setStatus("erro");
+        setProblem(e instanceof Error ? e.message : String(e));
       }
     }, 400);
 
@@ -75,9 +110,38 @@ export default function Studio() {
             <StatusDot status={status} />
           </div>
           <p className="mt-1 text-[12px] leading-snug text-faint">
-            Troque as imagens e vídeos das áreas de mockup. Tudo é salvo sozinho em{" "}
-            <span className="font-mono text-[11px]">content.json</span>.
+            Troque as imagens e vídeos das áreas de mockup. Tudo é salvo sozinho.
           </p>
+
+          <div className="mt-3 flex items-center justify-between gap-3">
+            <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-faint">
+              {backend === "supabase" ? (
+                <Cloud size={12} strokeWidth={1.8} />
+              ) : (
+                <HardDrive size={12} strokeWidth={1.8} />
+              )}
+              <span className="truncate">
+                {backend === "supabase" ? session.email : "arquivos locais do projeto"}
+              </span>
+            </span>
+
+            {backend === "supabase" && (
+              <button
+                type="button"
+                onClick={() => signOut()}
+                className="flex shrink-0 items-center gap-1.5 text-[11px] text-faint transition hover:text-mute"
+              >
+                <LogOut size={12} strokeWidth={1.8} />
+                sair
+              </button>
+            )}
+          </div>
+
+          {problem && (
+            <p className="mt-3 rounded-lg bg-red-500/10 px-3 py-2 text-[11px] leading-relaxed text-red-300">
+              {problem}
+            </p>
+          )}
         </header>
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -90,7 +154,7 @@ export default function Studio() {
                 const previous = content.media[asset.id];
                 const entry = await uploadFile(asset, file);
                 if (previous?.file && previous.file !== entry.file) {
-                  await removeFile(previous.file);
+                  await removeFile(previous);
                 }
                 patch(asset.id, {
                   ...entry,
@@ -107,15 +171,15 @@ export default function Studio() {
               onRemove={async () => {
                 const entry = content.media[asset.id];
                 patch(asset.id, undefined);
-                if (entry?.file) await removeFile(entry.file);
+                if (entry?.file) await removeFile(entry);
               }}
             />
           ))}
 
           <p className="px-1 pb-2 pt-3 text-[12px] leading-relaxed text-faint">
-            Depois de trocar as mídias, rode{" "}
-            <span className="font-mono text-[11px] text-mute">npm run optimize</span> para comprimir
-            as imagens antes de mandar a apresentação para alguém.
+            {backend === "supabase"
+              ? "As mídias ficam no Supabase e valem para a apresentação publicada. Comprima imagens e vídeos antes de enviar — quem abrir no celular baixa cada arquivo."
+              : "Depois de trocar as mídias, rode npm run optimize para comprimir as imagens antes de mandar a apresentação para alguém."}
           </p>
         </div>
       </aside>

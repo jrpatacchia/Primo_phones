@@ -5,6 +5,7 @@ import { Slide02Experience } from "./slides/Slide02Experience";
 import { Slide03Control } from "./slides/Slide03Control";
 import { Slide04Journey } from "./slides/Slide04Journey";
 import { Slide05Close } from "./slides/Slide05Close";
+import { isSupabaseConfigured } from "./lib/supabase";
 import {
   DEMO_INTERVAL_MS,
   SLIDE_COUNT,
@@ -35,7 +36,11 @@ export default function App() {
   const route = useMemo(() => readRoute(), []);
 
   if (route.mode === "studio") {
-    if (!import.meta.env.DEV) return <StudioUnavailable />;
+    /*
+     * Em produção o estúdio só faz sentido com Supabase: sem ele não há onde
+     * gravar, porque o servidor que escreve em disco só existe no npm run dev.
+     */
+    if (!import.meta.env.DEV && !isSupabaseConfigured) return <StudioUnavailable />;
     return (
       <Suspense fallback={<Loading />}>
         <Studio />
