@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Fundo — preto profundo → grafite */
+  --color-ink-950: #050506;
+  --color-ink-900: #0a0a0c;
+  --color-ink-850: #0f0f12;
+  --color-ink-800: #16161a;
+  --color-ink-700: #1d1d22;
+
+  /* Texto */
+  --color-chalk: #f4f5f7;
+  --color-mute: #8e9099;
+  --color-faint: #5a5c65;
+
+  /* Accent — azul-gelo metálico, usado com parcimônia */
+  --color-accent: #9cc4ff;
+  --color-accent-dim: #6f8dbd;
+
+  /* WhatsApp — apenas onde é semântico */
+  --color-wa: #25d366;
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-ink-950);
+  color: var(--color-chalk);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+/* ---- Deck (scroll + snap) ---- */
+.deck {
+  height: 100dvh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.deck::-webkit-scrollbar { display: none; }
+.deck-section {
+  height: 100dvh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+/* ---- Modo captura ---- */
+.capture { background: var(--color-ink-950); }
+.capture .stage-wrap { width: 1080px; height: 1920px; }
+
+/* Tipografia da apresentação */
+.headline {
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.98;
+}
+.kicker {
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+/* Superfícies */
+.hairline { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.07); }
+.glass {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.018));
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.075),
+    inset 0 1px 0 0 rgb(255 255 255 / 0.09),
+    0 24px 60px -20px rgb(0 0 0 / 0.9);
+  backdrop-filter: blur(14px);
+}
+
+.grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

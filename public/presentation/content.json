@@ -1,0 +1,37 @@
+{
+  "media": {
+    "catalogHome": {
+      "file": "catalog/catalog-home-1788378562198.mp4",
+      "kind": "video",
+      "updatedAt": 1788378562338,
+      "prewrapped": false
+    },
+    "cmsMobile": {
+      "file": "cms/cms-mobile.webp",
+      "kind": "image",
+      "prewrapped": false,
+      "updatedAt": 1788376656505
+    },
+    "otherBrand": {
+      "file": "branding/other-brand-page-1788378486384.mp4",
+      "kind": "video",
+      "updatedAt": 1788378486519,
+      "prewrapped": false
+    },
+    "catalogProducts": {
+      "file": "catalog/catalog-products-1788376136305.jpeg",
+      "kind": "image",
+      "updatedAt": 1788376136313
+    },
+    "catalogDetail": {
+      "file": "products/product-detail-1788378030726.jpeg",
+      "kind": "image",
+      "updatedAt": 1788378030734
+    },
+    "cmsDesktop": {
+      "file": "cms/cms-desktop-1788378165809.mp4",
+      "kind": "video",
+      "updatedAt": 1788378165818
+    }
+  }
+}

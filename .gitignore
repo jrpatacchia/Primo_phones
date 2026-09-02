@@ -1,0 +1,9 @@
+node_modules
+dist
+.vite
+
+# Cache do TypeScript
+tsconfig.tsbuildinfo
+
+# Originais das capturas, guardados pelo npm run optimize
+assets-originais
