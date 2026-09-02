@@ -117,14 +117,18 @@ User** marcado. É com esse e-mail e senha que você entra no `/studio`.
 npm run supabase:check
 ```
 
-**5. Levar as mídias que já existem** (opcional)
+**5. Levar as mídias que já existem**
+
+Entre no `/studio`. Se houver mídia só em arquivo local, aparece um aviso no
+topo da lista com o botão **Enviar para o Supabase** — um clique sobe tudo para
+o bucket e grava o conteúdo na tabela.
+
+O envio roda com a sua sessão já aberta no navegador, então não existe senha
+passando por linha de comando. Se preferir o terminal, existe também:
 
 ```bash
 SUPABASE_EMAIL=voce@exemplo.com SUPABASE_PASSWORD=suasenha npm run supabase:migrate
 ```
-
-Sobe cada arquivo de `public/presentation/assets/` para o bucket e grava o
-conteúdo na tabela. Depois disso o Supabase passa a mandar.
 
 ### Como fica
 

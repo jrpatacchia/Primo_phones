@@ -1,5 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Cloud, ExternalLink, HardDrive, LogOut, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
+import {
+  Cloud,
+  CloudUpload,
+  ExternalLink,
+  HardDrive,
+  Loader2,
+  LogOut,
+  Monitor,
+  RotateCcw,
+  Smartphone,
+  Tablet,
+} from "lucide-react";
 import { assetList } from "../lib/assets";
 import type { AssetKey } from "../lib/assets";
 import { EMPTY_CONTENT, type Content, type MediaEntry } from "../lib/content";
@@ -15,6 +26,7 @@ import {
   uploadFile,
   type Session,
 } from "./api";
+import { findLocalMedia, importLocalMedia, type PendingEntry } from "./importLocal";
 import { SignIn } from "./SignIn";
 import { SlotEditor } from "./SlotEditor";
 
@@ -57,15 +69,39 @@ function StudioPanel({ session }: { session: NonNullable<Session> }) {
   const [edits, setEdits] = useState(0);
 
   const [problem, setProblem] = useState<string | null>(null);
+  const [pending, setPending] = useState<PendingEntry[]>([]);
+  const [importing, setImporting] = useState<string | null>(null);
 
   useEffect(() => {
     fetchContent()
-      .then((data) => setContent({ media: data.media ?? {} }))
+      .then(async (data) => {
+        const loaded = { media: data.media ?? {} };
+        setContent(loaded);
+        if (backend === "supabase") setPending(await findLocalMedia(loaded));
+      })
       .catch((e: unknown) => {
         setStatus("erro");
         setProblem(e instanceof Error ? e.message : String(e));
       });
   }, []);
+
+  /* Leva as mídias que ainda estão em arquivo local para o bucket. */
+  const runImport = async () => {
+    setProblem(null);
+    try {
+      const next = await importLocalMedia(content, pending, (p) =>
+        setImporting(p.current ? `enviando ${p.done + 1} de ${p.total} — ${p.current}` : null),
+      );
+      await saveContent(next);
+      setContent(next);
+      setPending([]);
+      setVersion((v) => v + 1);
+    } catch (e) {
+      setProblem(e instanceof Error ? e.message : String(e));
+    } finally {
+      setImporting(null);
+    }
+  };
 
   /* Salva sozinho, com uma pausa para não gravar a cada arrastada de slider. */
   useEffect(() => {
@@ -145,6 +181,35 @@ function StudioPanel({ session }: { session: NonNullable<Session> }) {
         </header>
 
         <div className="flex-1 space-y-3 overflow-y-auto p-4">
+          {pending.length > 0 && (
+            <section className="rounded-2xl bg-accent/[0.07] p-4 ring-1 ring-accent/25">
+              <p className="text-[13px] font-semibold tracking-tight text-chalk">
+                {pending.length} {pending.length === 1 ? "mídia ainda está" : "mídias ainda estão"}{" "}
+                só no seu computador
+              </p>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-mute">
+                Enquanto não subirem, quem abrir a apresentação publicada de outro lugar não vai
+                vê-las.
+              </p>
+
+              <button
+                type="button"
+                disabled={importing !== null}
+                onClick={runImport}
+                className="mt-3 inline-flex items-center gap-2 rounded-lg bg-chalk px-3.5 py-2
+                           text-[12px] font-medium text-ink-950 transition hover:bg-white
+                           disabled:opacity-60"
+              >
+                {importing ? (
+                  <Loader2 size={13} className="animate-spin" />
+                ) : (
+                  <CloudUpload size={13} />
+                )}
+                {importing ?? "Enviar para o Supabase"}
+              </button>
+            </section>
+          )}
+
           {assetList.map((asset) => (
             <SlotEditor
               key={asset.id}
