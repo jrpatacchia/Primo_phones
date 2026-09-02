@@ -280,6 +280,11 @@ apresentação funciona igual, lendo os arquivos do próprio site, mas o
 O `.htaccess` continua na pasta `public/` para o caso de você também publicar
 na HostGator. Na Vercel ele é ignorado.
 
+O `vercel.json` não tem comentário explicando essas escolhas porque o Vercel
+valida o arquivo contra um schema e recusa qualquer propriedade fora dele —
+inclusive as chaves `"//"` que costumam ser usadas como comentário em JSON. A
+explicação mora aqui.
+
 ### Sobre o tráfego
 
 Vale saber onde cada mídia está hospedada:
